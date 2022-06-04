@@ -8,12 +8,12 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    first_name = 'Keith'
+    first_name = 'keith'
     return render_template('index.html', first_name=first_name)
 
 
 @app.route('/user/<name>')
-def name(name):
+def user(name):
     return render_template('user.html', username=name)
 
 # create custom error page
