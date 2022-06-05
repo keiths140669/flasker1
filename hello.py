@@ -35,6 +35,23 @@ class Users(db.Model):
     def __repr__(self):
         return '<name %r>' % self.name
 
+
+@app.route('/delete/<int:id>')
+def delete(id):
+    user_to_delete = Users.query.get_or_404(id)
+    name = None
+    form = UserForm()
+    try:
+        db.session.delete(user_to_delete)
+        db.session.commit()
+        flash('User Deleted Successfully!!')
+        our_users = Users.query.order_by(Users.date_added)
+        return render_template('add_user.html', form=form, name=name, our_users=our_users)
+    except:
+        flash('Whoops. Something went wrong deleting the user...rty again!!!')
+        our_users = Users.query.order_by(Users.date_added)
+        return render_template('add_user.html', form=form, name=name, our_users=our_users, id=id)
+
 # Create A Form Class
 
 
@@ -64,7 +81,7 @@ def update(id):
             flash('Error!! Looks like there was a problem..... try again!')
             return render_template('update.html', form=form, name_to_update=name_to_update)
     else:
-        return render_template('update.html', form=form, name_to_update=name_to_update)
+        return render_template('update.html', form=form, name_to_update=name_to_update, id=id)
 # Create A Form Class
 
 
