@@ -1,4 +1,6 @@
 import email
+from importlib.resources import contents
+from wsgiref.handlers import format_date_time
 from flask import Flask, render_template, flash, request
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField
@@ -7,6 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
+from wtforms.widgets import TextArea
 
 
 # Create a Flask Instance
@@ -21,6 +24,50 @@ app.config['SECRET_KEY'] = "my super secret key that no one is supposed to know"
 # Initialise the database
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+
+# Creat a Blog Post Model
+
+
+class Posts(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255))
+    content = db.Column(db.Text)
+    author = db.Column(db.String(255))
+    date_posted = db.Column(db.DateTime, default=datetime.utcnow)
+    slug = db.Column(db.String(255))
+
+# Create a posts form
+
+
+class PostForm(FlaskForm):
+    title = StringField("Title", validators=[DataRequired()])
+    content = StringField("Content", validators=[
+                          DataRequired()], widget=TextArea())
+    author = StringField("Author", validators=[DataRequired()])
+    slug = StringField("Slug", validators=[DataRequired()])
+    submit = SubmitField("Submit")
+
+# Add posts page
+
+
+@app.route('/add-post',  methods=["GET", "POST"])
+def add_post():
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Posts(title=form.title.data,
+                     content=form.content.data, author=form.author.data, slug=form.slug.data)
+        # Clear the form.
+        form.title.data = ""
+        form.content.data = ""
+        form.author.data = ""
+        form.slug.data = ""
+        # Add data to database
+        db.session.add(post)
+        db.session.commit()
+        flash('Post was submitted successfully')
+
+    # Redirect to the webpage
+    return render_template('add_post.html', form=form)
 
 # Creat a model
 
