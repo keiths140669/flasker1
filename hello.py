@@ -48,12 +48,29 @@ class PostForm(FlaskForm):
     submit = SubmitField("Submit")
 
 
+
+
+
 @app.route('/posts')
 def posts():
     # Grab all the posts from the database
     posts = Posts.query.order_by(Posts.date_posted)
 
     return render_template('posts.html', posts=posts)
+
+@app.route('/posts/delete/<int:id>')
+def delete_post(id):
+    post_to_delete = Posts.query.get_or_404(id)
+    try:
+        db.session.delete(post_to_delete)
+        db.session.commit()
+        flash('Post Deleted Successfully!!')
+        posts = Posts.query.order_by(Posts.date_posted)
+        return render_template('posts.html', posts=posts)
+    except:
+        flash('Whoops. Something went wrong deleting the post...rty again!!!')
+        posts = Posts.query.order_by(Posts.date_posted)
+        return render_template('posts.html', posts=posts)
 
 
 @app.route('/posts/<int:id>')
@@ -80,7 +97,7 @@ def edit_post(id):
     form.slug.data = post.slug
     form.content.data = post.content
     return render_template('edit_post.html', form=form)
-    
+
 
 # Add posts page
 
