@@ -18,6 +18,7 @@
     {{ post.content }}<br/>
 </div>
 
+<a href="{{ url_for('edit_post', id=post.id) }}" class="btn btn-outlin-secondary btn-sm">Edit Post</a>
 <a href="{{ url_for('posts') }}" class="btn btn-outlin-secondary btn-sm">Back To blog</a>
 
 
