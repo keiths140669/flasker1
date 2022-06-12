@@ -126,7 +126,7 @@ def edit_post(id):
     form = PostForm()
     if form.validate_on_submit():
         post.title = form.title.data
-        post.author = form.author.data
+        #post.author = form.author.data
         post.slug = form.slug.data
         post.content = form.content.data
         # Add to database
@@ -135,7 +135,7 @@ def edit_post(id):
         flash('Post has been updated!!')
         return(redirect(url_for('post', id=post.id)))
     form.title.data = post.title
-    form.author.data = post.author
+    #form.author.data = post.author
     form.slug.data = post.slug
     form.content.data = post.content
     return render_template('edit_post.html', form=form)
@@ -147,13 +147,15 @@ def edit_post(id):
 @app.route('/add-post',  methods=["GET", "POST"])
 def add_post():
     form = PostForm()
+
     if form.validate_on_submit():
+        poster = current_user.id
         post = Posts(title=form.title.data,
-                     content=form.content.data, author=form.author.data, slug=form.slug.data)
+                     content=form.content.data, poster_id=poster, slug=form.slug.data)
         # Clear the form.
         form.title.data = ""
         form.content.data = ""
-        form.author.data = ""
+        #form.author.data = ""
         form.slug.data = ""
         # Add data to database
         db.session.add(post)
@@ -200,13 +202,13 @@ def update(id):
     name_to_update = Users.query.get_or_404(id)
     if request.method == "POST":
         name_to_update.name = request.form['name']
-        name_to_update.usernam = request.form['username']
+        name_to_update.username = request.form['username']
         name_to_update.email = request.form['email']
         name_to_update.favourite_colour = request.form['favourite_colour']
         try:
             db.session.commit()
             flash('User Updated Successfully!!')
-            return render_template('dashboard.html', form=form, name_to_update=name_to_update)
+            return render_template('update.html', form=form, name_to_update=name_to_update)
         except:
             db.session.commit()
             flash('Error!! Looks like there was a problem..... try again!')
@@ -314,9 +316,11 @@ class Posts(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255))
     content = db.Column(db.Text)
-    author = db.Column(db.String(255))
+    #author = db.Column(db.String(255))
     date_posted = db.Column(db.DateTime, default=datetime.utcnow)
     slug = db.Column(db.String(255))
+    #Foreign key to lin users (refer to the primary key of the user)
+    poster_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
 class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -327,6 +331,8 @@ class Users(db.Model, UserMixin):
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
     # Do some password stuff
     password_hash = db.Column(db.String(128))
+    # User can have many posts
+    posts = db.relationship('Posts', backref='poster')
 
     @property
     def password(self):
