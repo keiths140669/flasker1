@@ -100,16 +100,24 @@ def posts():
     return render_template('posts.html', posts=posts)
 
 @app.route('/posts/delete/<int:id>')
+@login_required
 def delete_post(id):
     post_to_delete = Posts.query.get_or_404(id)
-    try:
-        db.session.delete(post_to_delete)
-        db.session.commit()
-        flash('Post Deleted Successfully!!')
-        posts = Posts.query.order_by(Posts.date_posted)
-        return render_template('posts.html', posts=posts)
-    except:
-        flash('Whoops. Something went wrong deleting the post...rty again!!!')
+    id = current_user.id
+    if id == post_to_delete.poster.id:
+
+        try:
+            db.session.delete(post_to_delete)
+            db.session.commit()
+            flash('Post Deleted Successfully!!')
+            posts = Posts.query.order_by(Posts.date_posted)
+            return render_template('posts.html', posts=posts)
+        except:
+            flash('Whoops. Something went wrong deleting the post...rty again!!!')
+            posts = Posts.query.order_by(Posts.date_posted)
+            return render_template('posts.html', posts=posts)
+    else:
+        flash('You are not authorised to delete this post!')
         posts = Posts.query.order_by(Posts.date_posted)
         return render_template('posts.html', posts=posts)
 
