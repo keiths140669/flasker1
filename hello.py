@@ -8,10 +8,12 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from webforms import LoginForm, PostForm, UserForm, PasswordForm, NamerForm, SearchForm
-
+from flask_ckeditor import CKEditor
 
 # Create a Flask Instance
 app = Flask(__name__)
+ckeditor = CKEditor(app)
+
 # Add database
 # Old SQLite DB
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users1.db'
