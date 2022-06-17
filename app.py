@@ -111,24 +111,30 @@ def dashboard():
         name_to_update.email = request.form['email']
         name_to_update.favourite_colour = request.form['favourite_colour']
         name_to_update.about_author = request.form['about_author']
-        name_to_update.profile_pic = request.files['profile_pic']
+        
        
-        # Grab image name
-        pic_filename = secure_filename(name_to_update.profile_pic.filename)
-        # Set UUID
-        pic_name = str(uuid.uuid1()) + '_' + pic_filename
-         # Save the image
-        saver = request.files['profile_pic']
-        # Change to a string to save to database
-        name_to_update.profile_pic = pic_name
-        try:
+        # Check for profile pic
+        if request.files['profile_pic']:
+            name_to_update.profile_pic = request.files['profile_pic']
+            # Grab image name
+            pic_filename = secure_filename(name_to_update.profile_pic.filename)
+            # Set UUID
+            pic_name = str(uuid.uuid1()) + '_' + pic_filename
+            # Save the image
+            saver = request.files['profile_pic']
+            # Change to a string to save to database
+            name_to_update.profile_pic = pic_name
+            try:
+                db.session.commit()
+                saver.save(os.path.join(app.config['UPLOAD_FOLDER'], pic_name))
+                flash('User Updated Successfully!!')
+                return render_template('dashboard.html', form=form, name_to_update=name_to_update)
+            except:
+                flash('Error!! Looks like there was a problem..... try again!')
+                return render_template('dashboard.html', form=form, name_to_update=name_to_update)
+        else:
             db.session.commit()
-            saver.save(os.path.join(app.config['UPLOAD_FOLDER'], pic_name))
             flash('User Updated Successfully!!')
-            return render_template('dashboard.html', form=form, name_to_update=name_to_update)
-        except:
-            db.session.commit()
-            flash('Error!! Looks like there was a problem..... try again!')
             return render_template('dashboard.html', form=form, name_to_update=name_to_update)
     else:
         return render_template('dashboard.html', form=form, name_to_update=name_to_update, id=id)
