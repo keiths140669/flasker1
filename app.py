@@ -118,11 +118,12 @@ def dashboard():
         # Set UUID
         pic_name = str(uuid.uuid1()) + '_' + pic_filename
          # Save the image
-        name_to_update.profile_pic.save(os.path.join(app.config['UPLOAD_FOLDER']), pic_name)
+        saver = request.files['profile_pic']
         # Change to a string to save to database
         name_to_update.profile_pic = pic_name
         try:
             db.session.commit()
+            saver.name_to_update.profile_pic.save(os.path.join(app.config['UPLOAD_FOLDER'], pic_name))
             flash('User Updated Successfully!!')
             return render_template('dashboard.html', form=form, name_to_update=name_to_update)
         except:
@@ -231,20 +232,25 @@ def add_post():
 
 
 @app.route('/delete/<int:id>')
+@login_required
 def delete(id):
-    user_to_delete = Users.query.get_or_404(id)
-    name = None
-    form = UserForm()
-    try:
-        db.session.delete(user_to_delete)
-        db.session.commit()
-        flash('User Deleted Successfully!!')
-        our_users = Users.query.order_by(Users.date_added)
-        return render_template('add_user.html', form=form, name=name, our_users=our_users)
-    except:
-        flash('Whoops. Something went wrong deleting the user...rty again!!!')
-        our_users = Users.query.order_by(Users.date_added)
-        return render_template('add_user.html', form=form, name=name, our_users=our_users, id=id)
+    if id == current_user.id:
+        user_to_delete = Users.query.get_or_404(id)
+        name = None
+        form = UserForm()
+        try:
+            db.session.delete(user_to_delete)
+            db.session.commit()
+            flash('User Deleted Successfully!!')
+            our_users = Users.query.order_by(Users.date_added)
+            return render_template('add_user.html', form=form, name=name, our_users=our_users)
+        except:
+            flash('Whoops. Something went wrong deleting the user...rty again!!!')
+            our_users = Users.query.order_by(Users.date_added)
+            return render_template('add_user.html', form=form, name=name, our_users=our_users, id=id)
+    else:
+        flash('You cannot delete that ID')
+        return redirect(url_for('dashboard'))
 
 # Create A Form Class
 
