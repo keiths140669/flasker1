@@ -9,6 +9,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from webforms import LoginForm, PostForm, UserForm, PasswordForm, NamerForm, SearchForm
 from flask_ckeditor import CKEditor
+from werkzeug.utils import secure_filename
+import uuid as uuid
+import os
 
 # Create a Flask Instance
 app = Flask(__name__)
@@ -22,6 +25,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password147@localh
 # Secret key
 app.config['SECRET_KEY'] = "my super secret key that no one is supposed to know"
 # Initialise the database
+UPLOAD_FOLDER = 'static/images/'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
@@ -105,6 +110,16 @@ def dashboard():
         name_to_update.email = request.form['email']
         name_to_update.favourite_colour = request.form['favourite_colour']
         name_to_update.about_author = request.form['about_author']
+        name_to_update.profile_pic = request.files['profile_pic']
+       
+        # Grab image name
+        pic_filename = secure_filename(name_to_update.profile_pic.filename)
+        # Set UUID
+        pic_name = str(uuid.uuid1()) + '_' + pic_filename
+         # Save the image
+        name_to_update.profile_pic.save(os.path.join(app.config['UPLOAD_FOLDER']), pic_name)
+        # Change to a string to save to database
+        name_to_update.profile_pic = pic_name
         try:
             db.session.commit()
             flash('User Updated Successfully!!')
@@ -373,8 +388,9 @@ class Users(db.Model, UserMixin):
     favourite_colour = db.Column(db.String(120))
     about_author = db.Column(db.Text(500), nullable=True)
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
+    profile_pic = db.Column(db.String(500), nullable=True)
     # Do some password stuff
-    password_hash = db.Column(db.String(128))
+    password_hash = db.Column(db.String())
     # User can have many posts
     posts = db.relationship('Posts', backref='poster')
 
