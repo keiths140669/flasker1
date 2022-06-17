@@ -21,7 +21,8 @@ ckeditor = CKEditor(app)
 # Old SQLite DB
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users1.db'
 # MYSQL database link
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password147@localhost/our_users1'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password147@localhost/our_users1'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://cqgzessyghgglw:afb7fa7ac9223255a10e5799c7edcd84dc9ccb6452df472179e51544d64ade78@ec2-52-72-56-59.compute-1.amazonaws.com:5432/d4djksrjmpfed1'
 # Secret key
 app.config['SECRET_KEY'] = "my super secret key that no one is supposed to know"
 # Initialise the database
@@ -386,7 +387,7 @@ class Users(db.Model, UserMixin):
     name = db.Column(db.String(200), nullable=False)
     email = db.Column(db.String(120), nullable=False, unique=True)
     favourite_colour = db.Column(db.String(120))
-    about_author = db.Column(db.Text(500), nullable=True)
+    about_author = db.Column(db.Text(), nullable=True)
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
     profile_pic = db.Column(db.String(500), nullable=True)
     # Do some password stuff
